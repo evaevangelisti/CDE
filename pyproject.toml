@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=80.10.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "CDE"
+version = "0.1.0"
+description = "Continuation-based Disambiguation Evaluator"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Eva", email = "eva.evangelisti03@gmail.com" }]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["black>=26.1.0", "isort>=7.0.0"]
+docs = ["furo>=2025.12.19", "sphinx>=8.1.3"]
+
+[project.scripts]
+cde = "cde.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
