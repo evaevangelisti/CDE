@@ -25,5 +25,5 @@ pip install -e ".[dev]"
 Run the pipeline with the following command:
 
 ```bash
-cde [options] <dataset-path> <model>
+cde [options] <dataset> <model>
 ```
