@@ -23,7 +23,7 @@ class OllamaGenerator(Generator):
         Args:
             model (str): Ollama model.
             host (str | None): Ollama host. If None, the default host will be used.
-            timeout (float): Timeout for Ollama API requests in seconds.
+            timeout (float): Timeout for Ollama API requests.
         """
         self._model: str = model
 
