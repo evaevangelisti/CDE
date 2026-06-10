@@ -5,7 +5,7 @@ from platformdirs import user_cache_dir
 
 # Constants
 
-CHECKPOINT_INTERVAL: int = 50
+CHECKPOINT_INTERVAL: int = 25
 
 # Paths
 
