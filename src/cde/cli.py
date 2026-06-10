@@ -164,11 +164,16 @@ def _generate_annotated_sentences(
             for annotated_sentence in annotated_sentences
         }
 
-    for i, sentence in tqdm(enumerate(dataset), desc="Generating", unit="sentence"):
-        try:
-            if sentence.instance_id in instance_ids:
-                continue
+    for i, sentence in tqdm(
+        enumerate(dataset),
+        desc="Generating",
+        total=len(dataset),
+        unit="sentence",
+    ):
+        if sentence.instance_id in instance_ids:
+            continue
 
+        try:
             sentence_definition_selection_prompt: str = (
                 SENTENCE_DEFINITION_SELECTION_PROMPT_TEMPLATE.format(
                     word=sentence.lemma,

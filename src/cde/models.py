@@ -46,9 +46,11 @@ class Sentence:
             dict[str, Any]: Dictionary.
         """
         return {
+            "instance_id": self.instance_id,
             "lemma": self.lemma,
             "pos": self.pos.value,
             "definitions": self.definitions,
+            "sense_id": self.sense_id,
             "sense_index": self.sense_index,
             "sentence": self.sentence,
         }
