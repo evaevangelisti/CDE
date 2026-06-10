@@ -234,10 +234,6 @@ def main(
         help="Output directory",
     ),
 ) -> None:
-    from datetime import datetime
-
-    timestamp: str = datetime.now().strftime("%Y%m%d_%H%M%S")
-
     for dataset in datasets.split():
         from .config import CACHE_DIR, DATASETS
         from .utils import download
@@ -282,10 +278,7 @@ def main(
         annotated_sentences: list[AnnotatedSentence] = _generate_annotated_sentences(
             generator,
             sentences,
-            output_dir
-            / f"{model.replace(':', '-')}_{timestamp}"
-            / dataset
-            / CHECKPOINT_FILENAME,
+            output_dir / f"{model.replace(':', '-')}" / dataset / CHECKPOINT_FILENAME,
             seed=seed,
         )
 
@@ -294,7 +287,7 @@ def main(
         save_annotated_sentences(
             annotated_sentences,
             output_dir
-            / f"{model.replace(':', '-')}_{timestamp}"
+            / f"{model.replace(':', '-')}"
             / dataset
             / ANNOTATED_SENTENCES_FILENAME,
         )
@@ -309,10 +302,7 @@ def main(
 
         save_evaluations(
             evaluations,
-            output_dir
-            / f"{model.replace(':', '-')}_{timestamp}"
-            / dataset
-            / EVALUATION_FILENAME,
+            output_dir / f"{model.replace(':', '-')}" / dataset / EVALUATION_FILENAME,
         )
 
 
