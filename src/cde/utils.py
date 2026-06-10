@@ -1,6 +1,42 @@
 import re
 from difflib import SequenceMatcher
+from pathlib import Path
 from string import Formatter
+
+import requests
+from tqdm import tqdm
+
+
+def download(
+    url: str,
+    path: Path,
+    chunk_size: int = 8192,
+) -> None:
+    """
+    Download a file from a URL.
+
+    Args:
+        url (str): URL.
+        path (Path): Path.
+        chunk_size (int, optional): Chunk size.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    response: requests.Response = requests.get(url, stream=True)
+    response.raise_for_status()
+
+    with (
+        path.open("wb") as file,
+        tqdm(
+            desc=path.name,
+            total=int(response.headers.get("content-length", 0)),
+            unit="B",
+            unit_scale=True,
+        ) as pbar,
+    ):
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            file.write(chunk)
+            pbar.update(len(chunk))
 
 
 def retrieve_template_fields(
@@ -63,6 +99,9 @@ def validate_continuation(
 
     if not continuation or len(continuation) <= len(sentence):
         return False
+
+    if sentence in continuation:
+        return True
 
     for start in range(len(continuation) - len(sentence) + 1):
         ratio = SequenceMatcher(

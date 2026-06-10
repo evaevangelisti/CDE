@@ -28,9 +28,11 @@ class Sentence:
     Sentence.
     """
 
+    instance_id: str
     lemma: str
     pos: POS
     definitions: list[str]
+    sense_id: str
     sense_index: int
     sentence: str
 
