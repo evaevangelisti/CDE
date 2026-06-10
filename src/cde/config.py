@@ -40,27 +40,47 @@ Based on both the sentence and the continuation, choose the correct dictionary d
 
 Provide as output only the number of the correct definition."""
 
-CONTINUATION_GENERATION_PROMPT_TEMPLATES: dict[str, str] = {
-    "free": """Read the sentence: {sentence}
+CONTINUATION_GENERATION_CONFIGURATIONS: dict[str, dict[str, Any]] = {
+    "free": {
+        "prompt": """Read the sentence: {sentence}
 
 Naturally continue the thought.
 
-Provide as output only the complete sentence with the continuation.""",
-    "focused": """Read the sentence: {sentence}
+Provide as output only the complete sentence with the continuation, without explanations or formatting.""",
+        "options": {
+            "temperature": 0.6,
+        },
+    },
+    "focused": {
+        "prompt": """Read the sentence: {sentence}
 
 Naturally continue the thought, focusing on the word "{word}".
 
-Provide as output only the complete sentence with the continuation.""",
-    "grounded": """Read the sentence: {sentence}
+Provide as output only the complete sentence with the continuation, without explanations or formatting.""",
+        "options": {
+            "temperature": 0.6,
+        },
+    },
+    "grounded": {
+        "prompt": """Read the sentence: {sentence}
 
 Continue the thought by adding a brief clause that grounds the specific scenario of "{word}".
 
-Provide as output only the complete sentence with the continuation.""",
-    "constrained": """Read the sentence: {sentence}
+Provide as output only the complete sentence with the continuation, without explanations or formatting.""",
+        "options": {
+            "temperature": 0.3,
+        },
+    },
+    "constrained": {
+        "prompt": """Read the sentence: {sentence}
 
 Complete the thought by adding only 3 to 5 terminology-dense words that extend the specific aspect of "{word}".
 
-Provide as output only the complete sentence with the continuation.""",
+Provide as output only the complete sentence with the continuation, without explanations or formatting.""",
+        "options": {
+            "temperature": 0.3,
+        },
+    },
 }
 
 # Generation options
@@ -68,9 +88,5 @@ Provide as output only the complete sentence with the continuation.""",
 TIMEOUT: float = 120.0
 
 DEFAULT_DEFINITION_SELECTION_OPTIONS: dict[str, Any] = {
-    "temperature": 0.2,
-}
-
-DEFAULT_CONTINUATION_GENERATION_OPTIONS: dict[str, Any] = {
-    "temperature": 0.8,
+    "temperature": 0.0,
 }

@@ -4,11 +4,34 @@ from typing import Any
 import typer
 from tqdm import tqdm
 
-from .config import CHECKPOINT_INTERVAL, DEFAULT_DEFINITION_SELECTION_OPTIONS
+from .config import (
+    ANNOTATED_SENTENCES_FILENAME,
+    CACHE_DIR,
+    CHECKPOINT_FILENAME,
+    CHECKPOINT_INTERVAL,
+    CONTINUATION_DEFINITION_SELECTION_PROMPT_TEMPLATE,
+    CONTINUATION_GENERATION_CONFIGURATIONS,
+    DATASETS,
+    DEFAULT_DEFINITION_SELECTION_OPTIONS,
+    EVALUATION_FILENAME,
+    SENTENCE_DEFINITION_SELECTION_PROMPT_TEMPLATE,
+)
+from .evaluator import Evaluator
+from .generators import OllamaGenerator
 from .generators.base import Generator
-from .io import Dataset, save_annotated_sentences
-from .models import AnnotatedContinuation, AnnotatedSentence, Sentence
-from .utils import extract_predicted_sense_index
+from .io import (
+    Dataset,
+    load_annotated_sentences,
+    save_annotated_sentences,
+    save_evaluations,
+)
+from .models import AnnotatedContinuation, AnnotatedSentence, Continuation, Sentence
+from .utils import (
+    download,
+    extract_predicted_sense_index,
+    retrieve_template_fields,
+    validate_continuation,
+)
 
 app: typer.Typer = typer.Typer(
     help="Continuation-based Disambiguation Evaluator",
@@ -32,55 +55,47 @@ def _generate_annotated_continuations(
     Returns:
         list[AnnotatedContinuation]: List of annotated continuations.
     """
-    from .config import (
-        CONTINUATION_DEFINITION_SELECTION_PROMPT_TEMPLATE,
-        CONTINUATION_GENERATION_PROMPT_TEMPLATES,
-        DEFAULT_CONTINUATION_GENERATION_OPTIONS,
-    )
-    from .models import Continuation
-    from .utils import retrieve_template_fields, validate_continuation
-
-    continuation_generation_options: dict[str, Any] = (
-        DEFAULT_CONTINUATION_GENERATION_OPTIONS.copy()
-    )
-
     definition_selection_options: dict[str, Any] = (
         DEFAULT_DEFINITION_SELECTION_OPTIONS.copy()
     )
 
     if seed is not None:
-        continuation_generation_options["seed"] = seed
         definition_selection_options["seed"] = seed
 
     continuations: list[AnnotatedContinuation] = []
 
     for (
         condition,
-        continuation_generation_prompt_template,
-    ) in CONTINUATION_GENERATION_PROMPT_TEMPLATES.items():
+        continuation_generation_configuration,
+    ) in CONTINUATION_GENERATION_CONFIGURATIONS.items():
         continuation_prompt_template_fields: set[str] = retrieve_template_fields(
-            continuation_generation_prompt_template,
+            continuation_generation_configuration["prompt"],
         )
 
         continuation_generation_prompt: str
 
         if "word" in continuation_prompt_template_fields:
-            continuation_generation_prompt = (
-                continuation_generation_prompt_template.format(
-                    word=sentence.lemma,
-                    sentence=sentence.sentence,
-                )
+            continuation_generation_prompt = continuation_generation_configuration[
+                "prompt"
+            ].format(
+                word=sentence.lemma,
+                sentence=sentence.sentence,
             )
         else:
-            continuation_generation_prompt = (
-                continuation_generation_prompt_template.format(
-                    sentence=sentence.sentence,
-                )
+            continuation_generation_prompt = continuation_generation_configuration[
+                "prompt"
+            ].format(
+                sentence=sentence.sentence,
             )
+
+        options: dict[str, Any] = continuation_generation_configuration["options"]
+
+        if seed is not None:
+            options["seed"] = seed
 
         continuation: str = generator.generate(
             continuation_generation_prompt,
-            options=continuation_generation_options,
+            options=options,
         )
 
         is_continuation_valid: bool = validate_continuation(
@@ -143,16 +158,12 @@ def _generate_annotated_sentences(
     Returns:
         list[AnnotatedSentence]: List of annotated sentences.
     """
-    from .config import SENTENCE_DEFINITION_SELECTION_PROMPT_TEMPLATE
-
     definition_selection_options: dict[str, Any] = (
         DEFAULT_DEFINITION_SELECTION_OPTIONS.copy()
     )
 
     if seed is not None:
         definition_selection_options["seed"] = seed
-
-    from .io import load_annotated_sentences
 
     annotated_sentences: list[AnnotatedSentence] = []
     instance_ids: set[str] = set()
@@ -240,9 +251,6 @@ def main(
     ),
 ) -> None:
     for dataset in datasets.split():
-        from .config import CACHE_DIR, DATASETS
-        from .utils import download
-
         dataset_path: Path
 
         if dataset in DATASETS:
@@ -267,8 +275,6 @@ def main(
             typer.echo(str(e), err=True)
             raise typer.Exit(code=1)
 
-        from .generators import OllamaGenerator
-
         try:
             generator: OllamaGenerator = OllamaGenerator(
                 model,
@@ -278,16 +284,12 @@ def main(
             typer.echo(str(e), err=True)
             raise typer.Exit(code=1)
 
-        from .config import CHECKPOINT_FILENAME
-
         annotated_sentences: list[AnnotatedSentence] = _generate_annotated_sentences(
             generator,
             sentences,
             output_dir / f"{model.replace(':', '-')}" / dataset / CHECKPOINT_FILENAME,
             seed=seed,
         )
-
-        from .config import ANNOTATED_SENTENCES_FILENAME
 
         save_annotated_sentences(
             annotated_sentences,
@@ -297,13 +299,8 @@ def main(
             / ANNOTATED_SENTENCES_FILENAME,
         )
 
-        from .evaluator import Evaluator
-
         evaluator: Evaluator = Evaluator()
         evaluations: dict[str, Any] = evaluator.evaluate(annotated_sentences)
-
-        from .config import EVALUATION_FILENAME
-        from .io import save_evaluations
 
         save_evaluations(
             evaluations,
