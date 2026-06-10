@@ -3,6 +3,8 @@ from typing import Any
 
 from platformdirs import user_cache_dir
 
+# Constants
+
 CHECKPOINT_INTERVAL: int = 50
 
 # Paths
@@ -62,6 +64,8 @@ Provide as output only the complete sentence with the continuation.""",
 }
 
 # Generation options
+
+TIMEOUT: float = 120.0
 
 DEFAULT_DEFINITION_SELECTION_OPTIONS: dict[str, Any] = {
     "temperature": 0.2,

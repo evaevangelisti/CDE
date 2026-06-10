@@ -2,6 +2,7 @@ from typing import Any
 
 import ollama
 
+from ..config import TIMEOUT
 from .base import Generator
 
 
@@ -14,6 +15,7 @@ class OllamaGenerator(Generator):
         self,
         model: str,
         host: str | None = None,
+        timeout: float = TIMEOUT,
     ):
         """
         Initialize the Ollama generator.
@@ -21,10 +23,11 @@ class OllamaGenerator(Generator):
         Args:
             model (str): Ollama model.
             host (str | None): Ollama host. If None, the default host will be used.
+            timeout (float): Timeout for Ollama API requests in seconds.
         """
         self._model: str = model
 
-        self._client: ollama.Client = ollama.Client(host=host)
+        self._client: ollama.Client = ollama.Client(host=host, timeout=timeout)
         self._ensure_model()
 
     def _ensure_model(
