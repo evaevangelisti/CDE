@@ -73,6 +73,7 @@ class Dataset:
                 sense_id=record["sense_id"],
                 sense_index=record["sense_index"],
                 sentence=record["sentence"],
+                word_offset=record["word_offset"],
             )
         except KeyError:
             raise ValueError("Invalid record format")
