@@ -35,6 +35,7 @@ class Sentence:
     sense_id: str
     sense_index: int
     sentence: str
+    word_offset: tuple[int, int]
 
     def to_dict(
         self,
@@ -53,6 +54,7 @@ class Sentence:
             "sense_id": self.sense_id,
             "sense_index": self.sense_index,
             "sentence": self.sentence,
+            "word_offset": self.word_offset,
         }
 
 

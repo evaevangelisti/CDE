@@ -98,35 +98,48 @@ class Evaluator:
         return {
             "total": sentences,
             "sentence_micro_accuracy": (
-                correct_sentences / sentences if sentences else None
+                round(
+                    correct_sentences / sentences,
+                    4,
+                )
+                if sentences
+                else None
             ),
             "sentence_macro_accuracy": (
-                sum(
-                    sum(correct_sentences) / len(correct_sentences)
-                    for correct_sentences in correct_sentences_by_sense.values()
+                round(
+                    sum(
+                        sum(correct_sentences) / len(correct_sentences)
+                        for correct_sentences in correct_sentences_by_sense.values()
+                    )
+                    / len(correct_sentences_by_sense),
+                    4,
                 )
-                / len(correct_sentences_by_sense)
                 if correct_sentences_by_sense
                 else None
             ),
             "consistency_accuracy": (
-                consistent_sentences / sentences_with_continuations
+                round(consistent_sentences / sentences_with_continuations, 4)
                 if sentences_with_continuations
                 else None
             ),
             "continuations": {
                 condition: {
                     "total": continuations[condition],
-                    "micro_accuracy": correct_continuations[condition]
-                    / continuations[condition],
+                    "micro_accuracy": round(
+                        correct_continuations[condition] / continuations[condition],
+                        4,
+                    ),
                     "macro_accuracy": (
-                        sum(
-                            sum(correct_continuations) / len(correct_continuations)
-                            for correct_continuations in correct_continuations_by_sense[
-                                condition
-                            ].values()
+                        round(
+                            sum(
+                                sum(correct_continuations) / len(correct_continuations)
+                                for correct_continuations in correct_continuations_by_sense[
+                                    condition
+                                ].values()
+                            )
+                            / len(correct_continuations_by_sense[condition]),
+                            4,
                         )
-                        / len(correct_continuations_by_sense[condition])
                     ),
                 }
                 for condition in continuations

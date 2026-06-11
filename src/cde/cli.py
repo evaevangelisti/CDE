@@ -78,7 +78,9 @@ def _generate_annotated_continuations(
             continuation_generation_prompt = continuation_generation_configuration[
                 "prompt"
             ].format(
-                word=sentence.lemma,
+                word=sentence.sentence[
+                    sentence.word_offset[0] : sentence.word_offset[1]
+                ],
                 sentence=sentence.sentence,
             )
         else:
@@ -235,7 +237,7 @@ def main(
     ),
     datasets: str = typer.Option(
         "wiktionary",
-        help="Datsets ('wiktionary', 'raganato' or custom path)",
+        help="Datsets ('wiktionary', 'wordnet', 'raganato' or custom path)",
     ),
     host: str | None = typer.Option(
         None,

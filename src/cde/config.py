@@ -20,6 +20,7 @@ EVALUATION_FILENAME: Path = Path("evaluation.json")
 
 DATASETS: dict[str, str] = {
     "wiktionary": "wiktionary.jsonl.gz",
+    "wordnet": "wordnet.jsonl.gz",
     "raganato": "raganato.jsonl.gz",
 }
 
@@ -42,43 +43,31 @@ Provide as output only the number of the correct definition."""
 
 CONTINUATION_GENERATION_CONFIGURATIONS: dict[str, dict[str, Any]] = {
     "free": {
-        "prompt": """Read the sentence: {sentence}
-
-Naturally continue the thought.
-
-Provide as output only the complete sentence with the continuation, without explanations or formatting.""",
+        "prompt": """Given the following sentence, naturally continue the thought: {sentence}
+Provide the complete sentence with the continuation, without explanations or formatting.""",
         "options": {
-            "temperature": 0.6,
+            "temperature": 0.4,
         },
     },
     "focused": {
-        "prompt": """Read the sentence: {sentence}
-
-Naturally continue the thought, focusing on the word "{word}".
-
-Provide as output only the complete sentence with the continuation, without explanations or formatting.""",
+        "prompt": """Given the following sentence, focus on the word "{word}" and naturally continue the thought: {sentence}
+Provide the complete sentence with the continuation, without explanations or formatting.""",
         "options": {
-            "temperature": 0.6,
+            "temperature": 0.4,
         },
     },
     "grounded": {
-        "prompt": """Read the sentence: {sentence}
-
-Continue the thought by adding a brief clause that grounds the specific scenario of "{word}".
-
-Provide as output only the complete sentence with the continuation, without explanations or formatting.""",
+        "prompt": """Given the following sentence, focus on the word "{word}" and continue the thought by adding a brief clause that grounds that specific scenario: {sentence}
+Provide the complete sentence with the continuation, without explanations or formatting.""",
         "options": {
-            "temperature": 0.3,
+            "temperature": 0.2,
         },
     },
     "constrained": {
-        "prompt": """Read the sentence: {sentence}
-
-Complete the thought by adding only 3 to 5 terminology-dense words that extend the specific aspect of "{word}".
-
-Provide as output only the complete sentence with the continuation, without explanations or formatting.""",
+        "prompt": """Given the following sentence, focus on the word "{word}" and complete the thought by adding only 3 to 5 terminology-dense words: {sentence}
+Provide the complete sentence with the continuation, without explanations or formatting.""",
         "options": {
-            "temperature": 0.3,
+            "temperature": 0.2,
         },
     },
 }
