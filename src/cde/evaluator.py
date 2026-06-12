@@ -57,7 +57,7 @@ class Evaluator:
                 if correct_sentences_by_sense
                 else None
             ),
-            "consistency_accuracy": (
+            "prediction_consistency": (
                 round(consistent_sentences / sentences_with_continuations, 4)
                 if sentences_with_continuations
                 else None
