@@ -83,30 +83,6 @@ class Continuation:
 
 
 @dataclass
-class PredictedSenseIndices:
-    """
-    Predicted sense indices.
-    """
-
-    zero_shot_predicted_sense_index: int | None = None
-    few_shots_predicted_sense_index: int | None = None
-
-    def to_dict(
-        self,
-    ) -> dict[str, Any]:
-        """
-        Convert to dictionary.
-
-        Returns:
-            dict[str, Any]: Dictionary.
-        """
-        return {
-            "zero_shot_predicted_sense_index": self.zero_shot_predicted_sense_index,
-            "few_shots_predicted_sense_index": self.few_shots_predicted_sense_index,
-        }
-
-
-@dataclass
 class AnnotatedContinuation:
     """
     Annotated continuation.
@@ -114,7 +90,7 @@ class AnnotatedContinuation:
 
     continuation: Continuation
     is_valid: bool
-    predicted_sense_indices: PredictedSenseIndices
+    predicted_sense_index: int | None = None
 
     def to_dict(
         self,
@@ -128,7 +104,7 @@ class AnnotatedContinuation:
         return {
             **self.continuation.to_dict(),
             "is_valid": self.is_valid,
-            **self.predicted_sense_indices.to_dict(),
+            "predicted_sense_index": self.predicted_sense_index,
         }
 
 
@@ -139,7 +115,7 @@ class AnnotatedSentence:
     """
 
     sentence: Sentence
-    predicted_sense_indices: PredictedSenseIndices
+    predicted_sense_index: int | None = None
     continuations: list[AnnotatedContinuation] = field(default_factory=list)
 
     def to_dict(
@@ -153,7 +129,7 @@ class AnnotatedSentence:
         """
         return {
             **self.sentence.to_dict(),
-            **self.predicted_sense_indices.to_dict(),
+            "predicted_sense_index": self.predicted_sense_index,
             "continuations": [
                 continuation.to_dict() for continuation in self.continuations
             ],

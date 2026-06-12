@@ -9,13 +9,11 @@ from .config import (
     CACHE_DIR,
     CHECKPOINT_FILENAME,
     CHECKPOINT_INTERVAL,
-    CONTINUATION_DEFINITION_SELECTION_EXAMPLES,
     CONTINUATION_DEFINITION_SELECTION_PROMPT_TEMPLATE,
     CONTINUATION_GENERATION_CONFIGURATIONS,
     DATASETS,
     DEFAULT_DEFINITION_SELECTION_OPTIONS,
     EVALUATION_FILENAME,
-    SENTENCE_DEFINITION_SELECTION_EXAMPLES,
     SENTENCE_DEFINITION_SELECTION_PROMPT_TEMPLATE,
 )
 from .evaluator import Evaluator
@@ -30,7 +28,6 @@ from .models import (
     AnnotatedContinuation,
     AnnotatedSentence,
     Continuation,
-    PredictedSenseIndices,
     Sentence,
 )
 from .utils import (
@@ -114,42 +111,29 @@ def _generate_annotated_continuations(
             continuation,
         )
 
-        continuation_predicted_sense_indices: PredictedSenseIndices = (
-            PredictedSenseIndices()
-        )
+        continuation_predicted_sense_index: int | None = None
 
         if is_continuation_valid:
-            for setting, examples in {
-                "zero_shot": "",
-                "few_shots": CONTINUATION_DEFINITION_SELECTION_EXAMPLES,
-            }.items():
-                continuation_definition_selection_prompt: str = (
-                    CONTINUATION_DEFINITION_SELECTION_PROMPT_TEMPLATE.format(
-                        examples=examples,
-                        word=sentence.lemma,
-                        definitions="\n".join(
-                            f"{i}) {definition}"
-                            for i, definition in enumerate(
-                                sentence.definitions, start=1
-                            )
-                        ),
-                        sentence=sentence.sentence,
-                        continuation=continuation,
-                    )
-                )
-
-                setattr(
-                    continuation_predicted_sense_indices,
-                    f"{setting}_predicted_sense_index",
-                    extract_predicted_sense_index(
-                        generator.generate(
-                            continuation_definition_selection_prompt,
-                            think=think,
-                            options=definition_selection_options,
-                        ),
-                        len(sentence.definitions),
+            continuation_definition_selection_prompt: str = (
+                CONTINUATION_DEFINITION_SELECTION_PROMPT_TEMPLATE.format(
+                    word=sentence.lemma,
+                    definitions="\n".join(
+                        f"{i}) {definition}"
+                        for i, definition in enumerate(sentence.definitions, start=1)
                     ),
+                    sentence=sentence.sentence,
+                    continuation=continuation,
                 )
+            )
+
+            continuation_predicted_sense_index = extract_predicted_sense_index(
+                generator.generate(
+                    continuation_definition_selection_prompt,
+                    think=think,
+                    options=definition_selection_options,
+                ),
+                len(sentence.definitions),
+            )
 
         continuations.append(
             AnnotatedContinuation(
@@ -158,7 +142,7 @@ def _generate_annotated_continuations(
                     continuation=continuation,
                 ),
                 is_valid=is_continuation_valid,
-                predicted_sense_indices=continuation_predicted_sense_indices,
+                predicted_sense_index=continuation_predicted_sense_index,
             )
         )
 
@@ -216,40 +200,25 @@ def _generate_annotated_sentences(
             continue
 
         try:
-            sentence_predicted_sense_indices: PredictedSenseIndices = (
-                PredictedSenseIndices()
+            sentence_definition_selection_prompt: str = (
+                SENTENCE_DEFINITION_SELECTION_PROMPT_TEMPLATE.format(
+                    word=sentence.lemma,
+                    definitions="\n".join(
+                        f"{i}) {definition}"
+                        for i, definition in enumerate(sentence.definitions, start=1)
+                    ),
+                    sentence=sentence.sentence,
+                )
             )
 
-            for setting, examples in {
-                "zero-shot": "",
-                "few-shots": SENTENCE_DEFINITION_SELECTION_EXAMPLES,
-            }.items():
-                sentence_definition_selection_prompt: str = (
-                    SENTENCE_DEFINITION_SELECTION_PROMPT_TEMPLATE.format(
-                        examples=examples,
-                        word=sentence.lemma,
-                        definitions="\n".join(
-                            f"{i}) {definition}"
-                            for i, definition in enumerate(
-                                sentence.definitions, start=1
-                            )
-                        ),
-                        sentence=sentence.sentence,
-                    )
-                )
-
-                setattr(
-                    sentence_predicted_sense_indices,
-                    f"{setting}_predicted_sense_index",
-                    extract_predicted_sense_index(
-                        generator.generate(
-                            sentence_definition_selection_prompt,
-                            think=think,
-                            options=definition_selection_options,
-                        ),
-                        len(sentence.definitions),
-                    ),
-                )
+            sentence_predicted_sense_index: int | None = extract_predicted_sense_index(
+                generator.generate(
+                    sentence_definition_selection_prompt,
+                    think=think,
+                    options=definition_selection_options,
+                ),
+                len(sentence.definitions),
+            )
 
             continuations: list[AnnotatedContinuation] = (
                 _generate_annotated_continuations(
@@ -263,7 +232,7 @@ def _generate_annotated_sentences(
             annotated_sentences.append(
                 AnnotatedSentence(
                     sentence=sentence,
-                    predicted_sense_indices=sentence_predicted_sense_indices,
+                    predicted_sense_index=sentence_predicted_sense_index,
                     continuations=continuations,
                 )
             )
@@ -363,8 +332,6 @@ def main(
             evaluations,
             output_dir / f"{model.replace(':', '-')}" / dataset / EVALUATION_FILENAME,
         )
-
-        typer.echo(f"Finished processing dataset '{dataset}'.\n")
 
 
 if __name__ == "__main__":

@@ -26,60 +26,14 @@ DATASETS: dict[str, str] = {
 
 # Prompt templates
 
-SENTENCE_DEFINITION_SELECTION_EXAMPLES: str = """Example 1:
-Read the sentence: the river bank was covered in mud after the heavy storm
-
-Choose the correct dictionary definition of the word "bank":
-0) sloping land (especially the slope beside a body of water)
-1) a financial institution that accepts deposits and channels the money into lending activities
-
-Provide as output only the number of the correct definition.
-Output: 0
-
-Example 2:
-Read the sentence: The automobile company decided to build a massive new plant in the industrial area.
-
-Choose the correct dictionary definition of the word "plant":
-0) (botany) An organism that is not an animal, especially an organism capable of photosynthesis, and typically a small or herbaceous organism of this kind, rather than a tree.
-1) (countable) A factory or other industrial or institutional building or facility.
-
-Provide as output only the number of the correct definition.
-Output: 1
-
-"""
-
-SENTENCE_DEFINITION_SELECTION_PROMPT_TEMPLATE: str = """{examples}Read the sentence: {sentence}
+SENTENCE_DEFINITION_SELECTION_PROMPT_TEMPLATE: str = """Read the sentence: {sentence}
 
 Choose the correct dictionary definition of the word "{word}":
 {definitions}
 
 Provide as output only the number of the correct definition."""
 
-CONTINUATION_DEFINITION_SELECTION_EXAMPLES: str = """Example 1:
-Read the sentence: the river bank was covered in mud after the heavy storm
-The following continuation implicitly disambiguates the word "bank": the river bank was covered in mud after the heavy storm, making it difficult for fishermen to find a safe spot along the rushing water
-
-Based on both the sentence and the continuation, choose the correct dictionary definition of the word "bank":
-0) sloping land (especially the slope beside a body of water)
-1) a financial institution that accepts deposits and channels the money into lending activities
-
-Provide as output only the number of the correct definition.
-Output: 0
-
-Example 2:
-Read the sentence: The automobile company decided to build a massive new plant in the industrial area.
-The following continuation implicitly disambiguates the word "plant": The automobile company decided to build a massive new plant in the industrial area, to streamline the assembly line and accelerate electric vehicle manufacturing
-
-Based on both the sentence and the continuation, choose the correct dictionary definition of the word "plant":
-0) (botany) An organism that is not an animal, especially an organism capable of photosynthesis, and typically a small or herbaceous organism of this kind, rather than a tree.
-1) (countable) A factory or other industrial or institutional building or facility.
-
-Provide as output only the number of the correct definition.
-Output: 1
-
-"""
-
-CONTINUATION_DEFINITION_SELECTION_PROMPT_TEMPLATE: str = """{examples}Read the sentence: {sentence}
+CONTINUATION_DEFINITION_SELECTION_PROMPT_TEMPLATE: str = """Read the sentence: {sentence}
 The following continuation implicitly disambiguates the word "{word}": {continuation}
 
 Based on both the sentence and the continuation, choose the correct dictionary definition of the word "{word}":
