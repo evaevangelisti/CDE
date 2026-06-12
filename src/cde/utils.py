@@ -28,7 +28,7 @@ def download(
     with (
         path.open("wb") as file,
         tqdm(
-            desc=path.name,
+            desc="Downloading dataset",
             total=int(response.headers.get("content-length", 0)),
             unit="B",
             unit_scale=True,

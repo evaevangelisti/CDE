@@ -304,7 +304,6 @@ def main(
                 url = DATASETS[dataset]
 
                 try:
-                    typer.echo(f"Downloading dataset '{dataset}'...")
                     download(url, dataset_path)
                 except Exception as e:
                     typer.echo(f"Failed to download dataset '{dataset}': {e}", err=True)
@@ -327,8 +326,6 @@ def main(
         except ValueError as e:
             typer.echo(str(e), err=True)
             raise typer.Exit(code=1)
-
-        typer.echo(f"Processing dataset '{dataset}' with model '{model}'...")
 
         annotated_sentences: list[AnnotatedSentence] = _generate_annotated_sentences(
             generator,
@@ -353,7 +350,7 @@ def main(
             output_dir / f"{model.replace(':', '-')}" / dataset / EVALUATION_FILENAME,
         )
 
-        typer.echo(f"Finished processing dataset '{dataset}' with model '{model}'.")
+        typer.echo(f"Finished processing dataset '{dataset}'.\n")
 
 
 if __name__ == "__main__":

@@ -65,7 +65,7 @@ class OllamaGenerator(Generator):
 
         Args:
              prompt (str): Prompt.
-             think (bool):
+             think (bool): Whether to include "thinking" steps in the response. Defaults to False.
              options (dict[str, Any]): Options.
 
         Returns:
