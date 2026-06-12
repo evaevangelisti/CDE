@@ -282,7 +282,7 @@ def main(
         help="Ollama Model",
     ),
     datasets: str = typer.Option(
-        "wiktionary",
+        "wiktionary wordnet raganato",
         help="Datsets ('wiktionary', 'wordnet', 'raganato' or custom path)",
     ),
     host: str | None = typer.Option(
