@@ -19,9 +19,9 @@ EVALUATION_FILENAME: Path = Path("evaluation.json")
 # Datasets
 
 DATASETS: dict[str, str] = {
-    "wiktionary": "wiktionary.jsonl.gz",
-    "wordnet": "wordnet.jsonl.gz",
-    "raganato": "raganato.jsonl.gz",
+    "wiktionary": "https://github.com/evaevangelisti/CDE/releases/download/v0.1.0/wiktionary.jsonl.gz",
+    "wordnet": "https://github.com/evaevangelisti/CDE/releases/download/v0.1.0/wordnet.jsonl.gz",
+    "raganato": "https://github.com/evaevangelisti/CDE/releases/download/v0.1.0/raganato.jsonl.gz",
 }
 
 # Prompt templates
