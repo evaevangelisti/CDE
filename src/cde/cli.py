@@ -49,6 +49,7 @@ app: typer.Typer = typer.Typer(
 def _generate_annotated_continuations(
     generator: OllamaGenerator,
     sentence: Sentence,
+    think: bool = False,
     seed: int | None = None,
 ) -> list[AnnotatedContinuation]:
     """
@@ -57,6 +58,7 @@ def _generate_annotated_continuations(
     Args:
         generator (Generator): Generator.
         sentence (Sentence): Sentence.
+        think (bool): Whether to use CoT prompting.
         seed (int | None): Random seed.
 
     Returns:
@@ -142,7 +144,7 @@ def _generate_annotated_continuations(
                     extract_predicted_sense_index(
                         generator.generate(
                             continuation_definition_selection_prompt,
-                            think=True,
+                            think=think,
                             options=definition_selection_options,
                         ),
                         len(sentence.definitions),
@@ -167,6 +169,7 @@ def _generate_annotated_sentences(
     generator: OllamaGenerator,
     dataset: Dataset,
     checkpoint_path: Path,
+    think: bool = False,
     seed: int | None = None,
 ) -> list[AnnotatedSentence]:
     """
@@ -176,6 +179,7 @@ def _generate_annotated_sentences(
         generator (Generator): Generator.
         dataset (Dataset): Dataset.
         checkpoint_path (Path): Checkpoint path.
+        think (bool): Whether to use CoT prompting.
         seed (int | None): Random seed.
 
     Returns:
@@ -240,7 +244,7 @@ def _generate_annotated_sentences(
                     extract_predicted_sense_index(
                         generator.generate(
                             sentence_definition_selection_prompt,
-                            think=True,
+                            think=think,
                             options=definition_selection_options,
                         ),
                         len(sentence.definitions),
@@ -251,7 +255,8 @@ def _generate_annotated_sentences(
                 _generate_annotated_continuations(
                     generator,
                     sentence,
-                    seed,
+                    think=think,
+                    seed=seed,
                 )
             )
 
@@ -283,6 +288,10 @@ def main(
     host: str | None = typer.Option(
         None,
         help="Ollama host",
+    ),
+    think: bool = typer.Option(
+        False,
+        help="Whether to use CoT prompting",
     ),
     seed: int | None = typer.Option(
         None,
@@ -335,6 +344,7 @@ def main(
             generator,
             sentences,
             output_dir / f"{model.replace(':', '-')}" / dataset / CHECKPOINT_FILENAME,
+            think=think,
             seed=seed,
         )
 
