@@ -198,6 +198,10 @@ def _generate_annotated_sentences(
             for annotated_sentence in annotated_sentences
         }
 
+        typer.echo(
+            f"Resuming from checkpoint '{checkpoint_path}' with {len(annotated_sentences)} annotated sentences"
+        )
+
     for i, sentence in tqdm(
         enumerate(dataset),
         desc="Generating",
@@ -300,6 +304,7 @@ def main(
                 url = DATASETS[dataset]
 
                 try:
+                    typer.echo(f"Downloading dataset '{dataset}'...")
                     download(url, dataset_path)
                 except Exception as e:
                     typer.echo(f"Failed to download dataset '{dataset}': {e}", err=True)
@@ -323,6 +328,8 @@ def main(
             typer.echo(str(e), err=True)
             raise typer.Exit(code=1)
 
+        typer.echo(f"Processing dataset '{dataset}' with model '{model}'...")
+
         annotated_sentences: list[AnnotatedSentence] = _generate_annotated_sentences(
             generator,
             sentences,
@@ -345,6 +352,8 @@ def main(
             evaluations,
             output_dir / f"{model.replace(':', '-')}" / dataset / EVALUATION_FILENAME,
         )
+
+        typer.echo(f"Finished processing dataset '{dataset}' with model '{model}'.")
 
 
 if __name__ == "__main__":
