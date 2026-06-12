@@ -10,6 +10,7 @@ from .models import (
     AnnotatedContinuation,
     AnnotatedSentence,
     Continuation,
+    PredictedSenseIndices,
     Sentence,
 )
 
@@ -158,7 +159,14 @@ def _parse_annotated_sentence(
     try:
         return AnnotatedSentence(
             sentence=Dataset._parse_sentence(record),
-            predicted_sense_index=record.get("predicted_sense_index"),
+            predicted_sense_indices=PredictedSenseIndices(
+                zero_shot_predicted_sense_index=record.get(
+                    "zero_shot_predicted_sense_index"
+                ),
+                few_shots_predicted_sense_index=record.get(
+                    "few_shots_predicted_sense_index"
+                ),
+            ),
             continuations=[
                 AnnotatedContinuation(
                     Continuation(
@@ -166,7 +174,14 @@ def _parse_annotated_sentence(
                         continuation=continuation["continuation"],
                     ),
                     is_valid=continuation["is_valid"],
-                    predicted_sense_index=continuation.get("predicted_sense_index"),
+                    predicted_sense_indices=PredictedSenseIndices(
+                        zero_shot_predicted_sense_index=continuation.get(
+                            "zero_shot_predicted_sense_index"
+                        ),
+                        few_shots_predicted_sense_index=continuation.get(
+                            "few_shots_predicted_sense_index"
+                        ),
+                    ),
                 )
                 for continuation in record["continuations"]
             ],

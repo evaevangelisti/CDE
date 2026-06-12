@@ -57,6 +57,7 @@ class OllamaGenerator(Generator):
     def generate(
         self,
         prompt: str,
+        think: bool = False,
         options: dict[str, Any] = {},
     ) -> str:
         """
@@ -64,6 +65,7 @@ class OllamaGenerator(Generator):
 
         Args:
              prompt (str): Prompt.
+             think (bool):
              options (dict[str, Any]): Options.
 
         Returns:
@@ -72,6 +74,6 @@ class OllamaGenerator(Generator):
         return self._client.generate(
             model=self._model,
             prompt=prompt,
-            think=False,
+            think=think,
             options=options,
         )["response"].strip()
