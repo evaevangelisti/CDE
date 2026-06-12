@@ -318,6 +318,10 @@ def main(
             typer.echo(str(e), err=True)
             raise typer.Exit(code=1)
 
+        if not sentences:
+            typer.echo(f"Dataset '{dataset}' is empty", err=True)
+            continue
+
         try:
             generator: OllamaGenerator = OllamaGenerator(
                 model,
