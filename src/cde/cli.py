@@ -9,12 +9,11 @@ from .config import (
     CACHE_DIR,
     CHECKPOINT_FILENAME,
     CHECKPOINT_INTERVAL,
-    CONTINUATION_DEFINITION_SELECTION_PROMPT_TEMPLATE,
     CONTINUATION_GENERATION_CONFIGURATIONS,
     DATASETS,
     DEFAULT_DEFINITION_SELECTION_OPTIONS,
+    DEFINITION_SELECTION_PROMPT_TEMPLATES,
     EVALUATION_FILENAME,
-    SENTENCE_DEFINITION_SELECTION_PROMPT_TEMPLATE,
 )
 from .evaluator import Evaluator
 from .generators import OllamaGenerator
@@ -28,6 +27,7 @@ from .models import (
     AnnotatedContinuation,
     AnnotatedSentence,
     Continuation,
+    Language,
     Sentence,
 )
 from .utils import (
@@ -37,15 +37,13 @@ from .utils import (
     validate_continuation,
 )
 
-app: typer.Typer = typer.Typer(
-    help="Continuation-based Disambiguation Evaluator",
-    add_completion=False,
-)
+app: typer.Typer = typer.Typer(add_completion=False)
 
 
 def _generate_annotated_continuations(
     generator: OllamaGenerator,
     sentence: Sentence,
+    language: Language = Language.ENGLISH,
     think: bool = False,
     seed: int | None = None,
 ) -> list[AnnotatedContinuation]:
@@ -55,6 +53,7 @@ def _generate_annotated_continuations(
     Args:
         generator (Generator): Generator.
         sentence (Sentence): Sentence.
+        language (Language): Language.
         think (bool): Whether to use CoT prompting.
         seed (int | None): Random seed.
 
@@ -75,15 +74,15 @@ def _generate_annotated_continuations(
         continuation_generation_configuration,
     ) in CONTINUATION_GENERATION_CONFIGURATIONS.items():
         continuation_prompt_template_fields: set[str] = retrieve_template_fields(
-            continuation_generation_configuration["prompt"],
+            continuation_generation_configuration["prompts"][language],
         )
 
         continuation_generation_prompt: str
 
         if "word" in continuation_prompt_template_fields:
             continuation_generation_prompt = continuation_generation_configuration[
-                "prompt"
-            ].format(
+                "prompts"
+            ][language].format(
                 word=sentence.sentence[
                     sentence.word_offset[0] : sentence.word_offset[1]
                 ],
@@ -91,8 +90,8 @@ def _generate_annotated_continuations(
             )
         else:
             continuation_generation_prompt = continuation_generation_configuration[
-                "prompt"
-            ].format(
+                "prompts"
+            ][language].format(
                 sentence=sentence.sentence,
             )
 
@@ -114,23 +113,23 @@ def _generate_annotated_continuations(
         continuation_predicted_sense_index: int | None = None
 
         if is_continuation_valid:
-            continuation_definition_selection_prompt: str = (
-                CONTINUATION_DEFINITION_SELECTION_PROMPT_TEMPLATE.format(
-                    word=sentence.lemma,
-                    definitions="\n".join(
-                        f"{i}) {definition}"
-                        for i, definition in enumerate(sentence.definitions, start=1)
-                    ),
-                    sentence=sentence.sentence,
-                    continuation=continuation,
-                )
+            continuation_definition_selection_prompt: (
+                str
+            ) = DEFINITION_SELECTION_PROMPT_TEMPLATES[language]["continuation"].format(
+                word=sentence.lemma,
+                definitions="\n".join(
+                    f"{i}) {definition}"
+                    for i, definition in enumerate(sentence.definitions, start=1)
+                ),
+                sentence=sentence.sentence,
+                continuation=continuation,
             )
 
             continuation_predicted_sense_index = extract_predicted_sense_index(
                 generator.generate(
                     continuation_definition_selection_prompt,
-                    think=think,
                     options=definition_selection_options,
+                    think=think,
                 ),
                 len(sentence.definitions),
             )
@@ -200,15 +199,17 @@ def _generate_annotated_sentences(
             continue
 
         try:
-            sentence_definition_selection_prompt: str = (
-                SENTENCE_DEFINITION_SELECTION_PROMPT_TEMPLATE.format(
-                    word=sentence.lemma,
-                    definitions="\n".join(
-                        f"{i}) {definition}"
-                        for i, definition in enumerate(sentence.definitions, start=1)
-                    ),
-                    sentence=sentence.sentence,
-                )
+            sentence_definition_selection_prompt: (
+                str
+            ) = DEFINITION_SELECTION_PROMPT_TEMPLATES[dataset.language][
+                "sentence"
+            ].format(
+                word=sentence.lemma,
+                definitions="\n".join(
+                    f"{i}) {definition}"
+                    for i, definition in enumerate(sentence.definitions, start=1)
+                ),
+                sentence=sentence.sentence,
             )
 
             sentence_predicted_sense_index: int | None = extract_predicted_sense_index(
@@ -224,6 +225,7 @@ def _generate_annotated_sentences(
                 _generate_annotated_continuations(
                     generator,
                     sentence,
+                    language=dataset.language,
                     think=think,
                     seed=seed,
                 )
@@ -252,7 +254,7 @@ def main(
     ),
     datasets: str = typer.Option(
         "wiktionary wordnet raganato",
-        help="Datsets ('wiktionary', 'wordnet', 'raganato' or custom path)",
+        help="Datasets ('wiktionary', 'wordnet', 'raganato' or custom path)",
     ),
     host: str | None = typer.Option(
         None,
@@ -271,6 +273,9 @@ def main(
         help="Output directory",
     ),
 ) -> None:
+    """
+    Continuation-based Disambiguation Evaluator
+    """
     for dataset in datasets.split():
         dataset_path: Path
 

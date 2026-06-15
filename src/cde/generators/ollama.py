@@ -42,6 +42,7 @@ class OllamaGenerator(Generator):
         try:
             if self._model not in [model.model for model in self._client.list().models]:
                 try:
+                    print("Pulling model from Ollama...")
                     self._client.pull(self._model)
                 except Exception:
                     raise ValueError(
@@ -57,8 +58,8 @@ class OllamaGenerator(Generator):
     def generate(
         self,
         prompt: str,
-        think: bool = False,
         options: dict[str, Any] = {},
+        think: bool = False,
     ) -> str:
         """
         Generate text using the Ollama API.
@@ -66,7 +67,7 @@ class OllamaGenerator(Generator):
         Args:
              prompt (str): Prompt.
              think (bool): Whether to make the model "think". Defaults to False.
-             options (dict[str, Any]): Options.
+             options (dict[str, Any]): Generation options.
 
         Returns:
             str: Generated text.

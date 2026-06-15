@@ -10,6 +10,7 @@ from .models import (
     AnnotatedContinuation,
     AnnotatedSentence,
     Continuation,
+    Language,
     Sentence,
 )
 
@@ -31,8 +32,22 @@ class Dataset:
         """
         self._path: Path = Path(path)
 
+        self._language: Language = Language.ENGLISH
         self._sentences: list[Sentence] = []
+
         self._load()
+
+    @property
+    def language(
+        self,
+    ) -> Language:
+        """
+        Get the language of the dataset.
+
+        Returns:
+            Language: Language of the dataset.
+        """
+        return self._language
 
     def _open(
         self,
@@ -94,6 +109,21 @@ class Dataset:
             lines: int = sum(1 for _ in file)
 
         with self._open() as file:
+            line: str = file.readline()
+
+            if not line.strip():
+                return
+
+            try:
+                record: dict[str, Any] = json.loads(line)
+
+                if "__metadata__" in record:
+                    self._language = Language(record["__metadata__"]["language"])
+                else:
+                    self._sentences.append(self._parse_sentence(record))
+            except (json.JSONDecodeError, ValueError):
+                pass
+
             for line in tqdm(file, desc="Loading Dataset", total=lines, unit=" line"):
                 if line.strip():
                     try:

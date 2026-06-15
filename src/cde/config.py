@@ -3,6 +3,8 @@ from typing import Any
 
 from platformdirs import user_cache_dir
 
+from .models import Language
+
 # Constants
 
 CHECKPOINT_INTERVAL: int = 25
@@ -26,46 +28,80 @@ DATASETS: dict[str, str] = {
 
 # Prompt templates
 
-SENTENCE_DEFINITION_SELECTION_PROMPT_TEMPLATE: str = """Read the sentence: {sentence}
+DEFINITION_SELECTION_PROMPT_TEMPLATES: dict[Language, dict[str, str]] = {
+    Language.ENGLISH: {
+        "sentence": """Read the sentence: {sentence}
 
 Choose the correct dictionary definition of the word "{word}":
 {definitions}
 
-Provide as output only the number of the correct definition."""
-
-CONTINUATION_DEFINITION_SELECTION_PROMPT_TEMPLATE: str = """Read the sentence: {sentence}
+Provide as output only the number of the correct definition.""",
+        "continuation": """Read the sentence: {sentence}
 The following continuation implicitly disambiguates the word "{word}": {continuation}
 
 Based on both the sentence and the continuation, choose the correct dictionary definition of the word "{word}":
 {definitions}
 
-Provide as output only the number of the correct definition."""
+Provide as output only the number of the correct definition.""",
+    },
+    Language.ITALIAN: {
+        "sentence": """Leggi la frase: {sentence}
+
+Scegli la definizione corretta del dizionario per la parola "{word}":
+{definitions}
+
+Fornisci come output solo il numero della definizione corretta.""",
+        "continuation": """Leggi la frase: {sentence}
+La seguente continuazione disambigua implicitamente la parola "{word}": {continuation}
+
+In base sia alla frase che alla continuazione, scegli la definizione corretta del dizionario per la parola "{word}":
+{definitions}
+
+Fornisci come output solo il numero della definizione corretta.""",
+    },
+}
 
 CONTINUATION_GENERATION_CONFIGURATIONS: dict[str, dict[str, Any]] = {
     "free": {
-        "prompt": """Given the following sentence, naturally continue the thought: {sentence}
+        "prompts": {
+            Language.ENGLISH: """Given the following sentence, naturally continue the thought: {sentence}
 Provide the complete sentence with the continuation, without explanations or formatting.""",
+            Language.ITALIAN: """Data la seguente frase, continua il pensiero in modo naturale: {sentence}
+Fornisci la frase completa di continuazione, senza spiegazioni o formattazione.""",
+        },
         "options": {
             "temperature": 0.4,
         },
     },
     "focused": {
-        "prompt": """Given the following sentence, focus on the word "{word}" and naturally continue the thought: {sentence}
+        "prompts": {
+            Language.ENGLISH: """Given the following sentence, focus on the word "{word}" and naturally continue the thought: {sentence}
 Provide the complete sentence with the continuation, without explanations or formatting.""",
+            Language.ITALIAN: """Data la seguente frase, concentrati sulla parola "{word}" e continua il pensiero in modo naturale: {sentence}
+Fornisci la frase completa di continuazione, senza spiegazioni o formattazione.""",
+        },
         "options": {
             "temperature": 0.4,
         },
     },
     "grounded": {
-        "prompt": """Given the following sentence, focus on the word "{word}" and continue the thought by adding a brief clause that grounds that specific scenario: {sentence}
+        "prompts": {
+            Language.ENGLISH: """Given the following sentence, focus on the word "{word}" and continue the thought by adding a brief clause that grounds that specific scenario: {sentence}
 Provide the complete sentence with the continuation, without explanations or formatting.""",
+            Language.ITALIAN: """Data la seguente frase, concentrati sulla parola "{word}" e continua il pensiero aggiungendo una breve proposizione che contestualizzi quello specifico scenario: {sentence}
+Fornisci la frase completa di continuazione, senza spiegazioni o formattazione.""",
+        },
         "options": {
             "temperature": 0.2,
         },
     },
     "constrained": {
-        "prompt": """Given the following sentence, focus on the word "{word}" and complete the thought by adding only 3 to 5 terminology-dense words: {sentence}
+        "prompts": {
+            Language.ENGLISH: """Given the following sentence, focus on the word "{word}" and complete the thought by adding only 3 to 5 terminology-dense words that naturally extend that specific aspect: {sentence}
 Provide the complete sentence with the continuation, without explanations or formatting.""",
+            Language.ITALIAN: """Data la seguente frase, concentrati sulla parola "{word}" e completa il pensiero aggiungendo solo da 3 a 5 parole dense di terminologia specifica che estendano in modo naturale quel determinato aspetto: {sentence}
+Fornisci la frase completa di continuazione, senza spiegazioni o formattazione.""",
+        },
         "options": {
             "temperature": 0.2,
         },

@@ -3,6 +3,15 @@ from enum import Enum
 from typing import Any
 
 
+class Language(Enum):
+    """
+    Language codes.
+    """
+
+    ENGLISH = "en"
+    ITALIAN = "it"
+
+
 class POS(Enum):
     """
     Part of speech tags.
