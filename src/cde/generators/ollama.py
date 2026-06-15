@@ -59,14 +59,12 @@ class OllamaGenerator(Generator):
         self,
         prompt: str,
         options: dict[str, Any] = {},
-        think: bool = False,
     ) -> str:
         """
         Generate text using the Ollama API.
 
         Args:
              prompt (str): Prompt.
-             think (bool): Whether to make the model "think". Defaults to False.
              options (dict[str, Any]): Generation options.
 
         Returns:
@@ -75,6 +73,6 @@ class OllamaGenerator(Generator):
         return self._client.generate(
             model=self._model,
             prompt=prompt,
-            think=think,
-            options=options,
+            think=options.get("think", False),
+            options={key: value for key, value in options.items() if key != "think"},
         )["response"].strip()

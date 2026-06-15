@@ -256,7 +256,13 @@ def save_annotated_sentences(
 
     with path.open("w") as file:
         for annotated_sentence in annotated_sentences:
-            file.write(json.dumps(annotated_sentence.to_dict()) + "\n")
+            file.write(
+                json.dumps(
+                    annotated_sentence.to_dict(),
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
 
 
 def save_evaluations(

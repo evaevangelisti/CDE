@@ -17,6 +17,7 @@ from .config import (
 )
 from .evaluator import Evaluator
 from .generators import OllamaGenerator
+from .generators.base import Generator
 from .io import (
     Dataset,
     load_annotated_sentences,
@@ -41,7 +42,7 @@ app: typer.Typer = typer.Typer(add_completion=False)
 
 
 def _generate_annotated_continuations(
-    generator: OllamaGenerator,
+    generator: Generator,
     sentence: Sentence,
     language: Language = Language.ENGLISH,
     think: bool = False,
@@ -63,6 +64,9 @@ def _generate_annotated_continuations(
     definition_selection_options: dict[str, Any] = (
         DEFAULT_DEFINITION_SELECTION_OPTIONS.copy()
     )
+
+    if isinstance(generator, OllamaGenerator):
+        definition_selection_options["think"] = think
 
     if seed is not None:
         definition_selection_options["seed"] = seed
@@ -95,14 +99,16 @@ def _generate_annotated_continuations(
                 sentence=sentence.sentence,
             )
 
-        options: dict[str, Any] = continuation_generation_configuration["options"]
+        continuation_generation_options: dict[str, Any] = (
+            continuation_generation_configuration["options"]
+        )
 
         if seed is not None:
-            options["seed"] = seed
+            continuation_generation_options["seed"] = seed
 
         continuation: str = generator.generate(
             continuation_generation_prompt,
-            options=options,
+            options=continuation_generation_options,
         )
 
         is_continuation_valid: bool = validate_continuation(
@@ -129,7 +135,6 @@ def _generate_annotated_continuations(
                 generator.generate(
                     continuation_definition_selection_prompt,
                     options=definition_selection_options,
-                    think=think,
                 ),
                 len(sentence.definitions),
             )
@@ -149,7 +154,7 @@ def _generate_annotated_continuations(
 
 
 def _generate_annotated_sentences(
-    generator: OllamaGenerator,
+    generator: Generator,
     dataset: Dataset,
     checkpoint_path: Path,
     think: bool = False,
@@ -171,6 +176,9 @@ def _generate_annotated_sentences(
     definition_selection_options: dict[str, Any] = (
         DEFAULT_DEFINITION_SELECTION_OPTIONS.copy()
     )
+
+    if isinstance(generator, OllamaGenerator):
+        definition_selection_options["think"] = think
 
     if seed is not None:
         definition_selection_options["seed"] = seed
@@ -215,7 +223,6 @@ def _generate_annotated_sentences(
             sentence_predicted_sense_index: int | None = extract_predicted_sense_index(
                 generator.generate(
                     sentence_definition_selection_prompt,
-                    think=think,
                     options=definition_selection_options,
                 ),
                 len(sentence.definitions),
