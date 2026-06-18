@@ -52,14 +52,6 @@ cde.models module
    :undoc-members:
    :show-inheritance:
 
-cde.utils module
-----------------
-
-.. automodule:: cde.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 
