@@ -1,8 +1,6 @@
 from pathlib import Path
 from typing import Any
 
-from platformdirs import user_cache_dir
-
 from .models import Language
 
 # Constants
@@ -11,20 +9,10 @@ CHECKPOINT_INTERVAL: int = 25
 
 # Paths
 
-CACHE_DIR: Path = Path(user_cache_dir(appname="CDE"))
-
 CHECKPOINT_FILENAME: Path = Path("checkpoint.jsonl")
 ANNOTATED_SENTENCES_FILENAME: Path = Path("annotated_sentences.jsonl")
 
 EVALUATION_FILENAME: Path = Path("evaluation.json")
-
-# Datasets
-
-DATASETS: dict[str, str] = {
-    "wiktionary": "https://github.com/evaevangelisti/CDE/releases/download/v0.1.0/wiktionary.jsonl.gz",
-    "wordnet": "https://github.com/evaevangelisti/CDE/releases/download/v0.1.0/wordnet.jsonl.gz",
-    "raganato": "https://github.com/evaevangelisti/CDE/releases/download/v0.1.0/raganato.jsonl.gz",
-}
 
 # Prompt templates
 

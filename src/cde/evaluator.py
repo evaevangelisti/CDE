@@ -123,7 +123,7 @@ class Evaluator:
         for annotated_sentence in tqdm(
             annotated_sentences,
             desc="Evaluating",
-            unit=" annotated sentence",
+            unit="annotated sentence",
         ):
             sense_id: str = annotated_sentence.sentence.sense_id
 

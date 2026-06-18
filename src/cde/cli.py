@@ -1,4 +1,7 @@
+import re
+from difflib import SequenceMatcher
 from pathlib import Path
+from string import Formatter
 from typing import Any
 
 import typer
@@ -6,11 +9,9 @@ from tqdm import tqdm
 
 from .config import (
     ANNOTATED_SENTENCES_FILENAME,
-    CACHE_DIR,
     CHECKPOINT_FILENAME,
     CHECKPOINT_INTERVAL,
     CONTINUATION_GENERATION_CONFIGURATIONS,
-    DATASETS,
     DEFAULT_DEFINITION_SELECTION_OPTIONS,
     DEFINITION_SELECTION_PROMPT_TEMPLATES,
     EVALUATION_FILENAME,
@@ -31,14 +32,70 @@ from .models import (
     Language,
     Sentence,
 )
-from .utils import (
-    download,
-    extract_predicted_sense_index,
-    retrieve_template_fields,
-    validate_continuation,
-)
 
 app: typer.Typer = typer.Typer(add_completion=False)
+
+
+def _extract_predicted_sense_index(
+    response: str,
+    definitions: int,
+) -> int | None:
+    """
+    Extract the predicted sense index from the response.
+
+    Args:
+        response (str): Response.
+        definitions (int): Number of definitions.
+
+    Returns:
+        int | None: Predicted sense index (0-based) or None if not found or out of range.
+    """
+    match: re.Match[str] | None = re.search(r"\d+", response)
+    if not match:
+        return None
+
+    predicted_sense_index: int = int(match.group()) - 1
+
+    if 0 <= predicted_sense_index < definitions:
+        return predicted_sense_index
+
+    return None
+
+
+def _validate_continuation(
+    sentence: str,
+    continuation: str,
+) -> bool:
+    """
+    Validate the continuation.
+
+    Args:
+        sentence (str): Original sentence.
+        continuation (str): Continuation.
+
+    Returns:
+        bool: True if the continuation is valid, False otherwise.
+    """
+    sentence = sentence.strip().lower()
+    continuation = continuation.strip().lower()
+
+    if not continuation or len(continuation) <= len(sentence):
+        return False
+
+    if sentence in continuation:
+        return True
+
+    for start in range(len(continuation) - len(sentence) + 1):
+        ratio = SequenceMatcher(
+            None,
+            sentence,
+            continuation[start : start + len(sentence)],
+        ).ratio()
+
+        if ratio > 0.90:
+            return True
+
+    return False
 
 
 def _generate_annotated_continuations(
@@ -77,9 +134,13 @@ def _generate_annotated_continuations(
         condition,
         continuation_generation_configuration,
     ) in CONTINUATION_GENERATION_CONFIGURATIONS.items():
-        continuation_prompt_template_fields: set[str] = retrieve_template_fields(
-            continuation_generation_configuration["prompts"][language],
-        )
+        continuation_prompt_template_fields: set[str] = {
+            field
+            for _, field, _, _ in Formatter().parse(
+                continuation_generation_configuration["prompts"][language]
+            )
+            if field
+        }
 
         continuation_generation_prompt: str
 
@@ -111,7 +172,7 @@ def _generate_annotated_continuations(
             options=continuation_generation_options,
         )
 
-        is_continuation_valid: bool = validate_continuation(
+        is_continuation_valid: bool = _validate_continuation(
             sentence.sentence,
             continuation,
         )
@@ -131,7 +192,7 @@ def _generate_annotated_continuations(
                 continuation=continuation,
             )
 
-            continuation_predicted_sense_index = extract_predicted_sense_index(
+            continuation_predicted_sense_index = _extract_predicted_sense_index(
                 generator.generate(
                     continuation_definition_selection_prompt,
                     options=definition_selection_options,
@@ -220,7 +281,7 @@ def _generate_annotated_sentences(
                 sentence=sentence.sentence,
             )
 
-            sentence_predicted_sense_index: int | None = extract_predicted_sense_index(
+            sentence_predicted_sense_index: int | None = _extract_predicted_sense_index(
                 generator.generate(
                     sentence_definition_selection_prompt,
                     options=definition_selection_options,
@@ -259,9 +320,8 @@ def main(
     model: str = typer.Argument(
         help="Ollama Model",
     ),
-    datasets: str = typer.Option(
-        "wiktionary wordnet raganato",
-        help="Datasets ('wiktionary', 'wordnet', 'raganato' or custom path)",
+    datasets: str = typer.Argument(
+        help="Datasets",
     ),
     host: str | None = typer.Option(
         None,
@@ -284,32 +344,22 @@ def main(
     Continuation-based Disambiguation Evaluator
     """
     for dataset in datasets.split():
-        dataset_path: Path
+        dataset_path: Path = Path(dataset)
 
-        if dataset in DATASETS:
-            dataset = dataset.lower()
-            dataset_path = CACHE_DIR / f"{dataset}.jsonl.gz"
+        if dataset_path.suffix != ".jsonl":
+            typer.echo(f"Dataset '{dataset_path}' is not a JSONL file", err=True)
+            continue
 
-            if not dataset_path.exists():
-                url = DATASETS[dataset]
-
-                try:
-                    download(url, dataset_path)
-                except Exception as e:
-                    typer.echo(f"Failed to download dataset '{dataset}': {e}", err=True)
-                    continue
-        else:
-            dataset_path = Path(dataset)
-            dataset = dataset_path.stem
+        output_dir = output_dir / f"{model.replace(':', '-')}" / dataset_path.stem
 
         try:
             sentences: Dataset = Dataset(dataset_path)
         except FileNotFoundError as e:
             typer.echo(str(e), err=True)
-            raise typer.Exit(code=1)
+            continue
 
         if not sentences:
-            typer.echo(f"Dataset '{dataset}' is empty", err=True)
+            typer.echo(f"Dataset '{dataset_path.stem}' is empty", err=True)
             continue
 
         try:
@@ -324,17 +374,14 @@ def main(
         annotated_sentences: list[AnnotatedSentence] = _generate_annotated_sentences(
             generator,
             sentences,
-            output_dir / f"{model.replace(':', '-')}" / dataset / CHECKPOINT_FILENAME,
+            output_dir / CHECKPOINT_FILENAME,
             think=think,
             seed=seed,
         )
 
         save_annotated_sentences(
             annotated_sentences,
-            output_dir
-            / f"{model.replace(':', '-')}"
-            / dataset
-            / ANNOTATED_SENTENCES_FILENAME,
+            output_dir / ANNOTATED_SENTENCES_FILENAME,
         )
 
         evaluator: Evaluator = Evaluator()
@@ -342,7 +389,7 @@ def main(
 
         save_evaluations(
             evaluations,
-            output_dir / f"{model.replace(':', '-')}" / dataset / EVALUATION_FILENAME,
+            output_dir / EVALUATION_FILENAME,
         )
 
 

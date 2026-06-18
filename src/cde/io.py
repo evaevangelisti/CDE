@@ -124,7 +124,7 @@ class Dataset:
             except (json.JSONDecodeError, ValueError):
                 pass
 
-            for line in tqdm(file, desc="Loading Dataset", total=lines, unit=" line"):
+            for line in tqdm(file, desc="Loading dataset", total=lines, unit="line"):
                 if line.strip():
                     try:
                         record: dict[str, Any] = json.loads(line)
@@ -229,7 +229,7 @@ def load_annotated_sentences(
             file,
             desc="Loading checkpoint",
             total=lines,
-            unit=" annotated sentence",
+            unit="annotated sentence",
         ):
             if line.strip():
                 try:
