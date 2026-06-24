@@ -338,6 +338,7 @@ def main(
     output_dir: Path = typer.Option(
         Path("."),
         help="Output directory",
+        file_okay=False,
     ),
 ) -> None:
     """
