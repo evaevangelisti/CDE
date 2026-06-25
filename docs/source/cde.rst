@@ -12,50 +12,58 @@ Subpackages
 Submodules
 ----------
 
+cde.annotate module
+-------------------
+
+.. automodule:: cde.annotate
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 cde.cli module
 --------------
 
 .. automodule:: cde.cli
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 cde.config module
 -----------------
 
 .. automodule:: cde.config
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 cde.evaluator module
 --------------------
 
 .. automodule:: cde.evaluator
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 cde.io module
 -------------
 
 .. automodule:: cde.io
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 cde.models module
 -----------------
 
 .. automodule:: cde.models
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: cde
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
