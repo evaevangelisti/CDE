@@ -14,7 +14,7 @@ ANNOTATED_SENTENCES_FILENAME: Path = Path("annotated_sentences.jsonl")
 
 EVALUATION_FILENAME: Path = Path("evaluation.json")
 
-# Prompt templates
+# Generation configurations
 
 DEFINITION_SELECTION_PROMPT_TEMPLATES: dict[Language, dict[str, str]] = {
     Language.ENGLISH: {
@@ -47,6 +47,10 @@ In base sia alla frase che alla continuazione, scegli la definizione corretta de
 
 Fornisci come output solo il numero della definizione corretta.""",
     },
+}
+
+DEFAULT_DEFINITION_SELECTION_OPTIONS: dict[str, Any] = {
+    "temperature": 0.0,
 }
 
 CONTINUATION_GENERATION_CONFIGURATIONS: dict[str, dict[str, Any]] = {
@@ -94,12 +98,4 @@ Fornisci la frase completa di continuazione, senza spiegazioni o formattazione."
             "temperature": 0.2,
         },
     },
-}
-
-# Generation options
-
-TIMEOUT: float = 120.0
-
-DEFAULT_DEFINITION_SELECTION_OPTIONS: dict[str, Any] = {
-    "temperature": 0.0,
 }

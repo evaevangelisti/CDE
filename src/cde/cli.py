@@ -66,7 +66,7 @@ def _parse_backend_options(
 @app.command()
 def main(
     model: str = typer.Argument(
-        help="Ollama Model",
+        help="Model",
     ),
     dataset_paths: list[Path] = typer.Argument(
         help="Paths to datasets in JSONL format",
@@ -89,7 +89,7 @@ def main(
     ),
     think: bool = typer.Option(
         False,
-        help="Whether to use CoT prompting",
+        help="Whether to use CoT prompting for Ollama",
     ),
     seed: int | None = typer.Option(
         None,
