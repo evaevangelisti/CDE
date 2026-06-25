@@ -3,6 +3,15 @@ from enum import Enum
 from typing import Any
 
 
+class Backend(str, Enum):
+    """
+    Backend types.
+    """
+
+    OLLAMA = "ollama"
+    VLLM = "vllm"
+
+
 class Language(Enum):
     """
     Language codes.

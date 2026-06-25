@@ -7,17 +7,26 @@ class Generator(ABC):
     Base generator.
     """
 
+    def __init__(
+        self,
+        model: str,
+    ):
+        self._model: str = model
+
     @abstractmethod
     def generate(
         self,
-        prompt: str,
+        prompts: list[str],
         options: dict[str, Any] = {},
-    ) -> str:
+    ) -> list[str]:
         """
-        Generate a continuation.
+        Generate text based on the given prompts and options.
 
         Args:
-            prompt (str): Prompt.
+            prompt (list[str]): Prompts.
             options (dict[str, Any]): Generation options.
+
+        Returns:
+            list[str]: Generated text for each prompt.
         """
         pass

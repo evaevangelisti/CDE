@@ -1,11 +1,11 @@
 from pathlib import Path
 from typing import Any
 
-from .models import Language
+from .models import Backend, Language
 
 # Constants
 
-CHECKPOINT_INTERVAL: int = 25
+DEFAULT_BACKEND: Backend = Backend.VLLM
 
 # Paths
 

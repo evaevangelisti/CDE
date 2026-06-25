@@ -7,13 +7,14 @@ name = "CDE"
 version = "0.1.0"
 description = "Continuation-based Disambiguation Evaluator"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 license = { file = "LICENSE" }
 authors = [{ name = "Eva", email = "eva.evangelisti03@gmail.com" }]
 dependencies = [
     "ollama>=0.6.2",
     "tqdm>=4.67.1",
     "typer>=0.21.1",
+    "vllm>=0.23.0; sys_platform != 'darwin'",
 ]
 
 [project.optional-dependencies]

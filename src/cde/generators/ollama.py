@@ -2,10 +2,12 @@ from typing import Any
 
 import ollama
 
-from ..config import TIMEOUT
+from ..models import Backend
 from .base import Generator
+from .factory import GeneratorFactory
 
 
+@GeneratorFactory.register(Backend.OLLAMA)
 class OllamaGenerator(Generator):
     """
     Ollama generator.
@@ -14,20 +16,18 @@ class OllamaGenerator(Generator):
     def __init__(
         self,
         model: str,
-        host: str | None = None,
-        timeout: float = TIMEOUT,
+        **kwargs: Any,
     ):
         """
         Initialize the Ollama generator.
 
         Args:
             model (str): Ollama model.
-            host (str | None): Ollama host. If None, the default host will be used.
-            timeout (float): Timeout for Ollama API requests.
+            **kwargs: Additional keyword arguments to pass to the Ollama client.
         """
-        self._model: str = model
+        super().__init__(model=model)
 
-        self._client: ollama.Client = ollama.Client(host=host, timeout=timeout)
+        self._client: ollama.Client = ollama.Client(**kwargs)
         self._ensure_model()
 
     def _ensure_model(
@@ -57,22 +57,27 @@ class OllamaGenerator(Generator):
 
     def generate(
         self,
-        prompt: str,
+        prompts: list[str],
         options: dict[str, Any] = {},
-    ) -> str:
+    ) -> list[str]:
         """
         Generate text using the Ollama API.
 
         Args:
-             prompt (str): Prompt.
+             prompts (list[str]): Prompts.
              options (dict[str, Any]): Generation options.
 
         Returns:
-            str: Generated text.
+            list[str]: Generated text for each prompt.
         """
-        return self._client.generate(
-            model=self._model,
-            prompt=prompt,
-            think=options.get("think", False),
-            options={key: value for key, value in options.items() if key != "think"},
-        )["response"].strip()
+        return [
+            self._client.generate(
+                model=self._model,
+                prompt=prompt,
+                think=options.get("think", False),
+                options={
+                    key: value for key, value in options.items() if key != "think"
+                },
+            )["response"].strip()
+            for prompt in prompts
+        ]
