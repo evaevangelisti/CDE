@@ -20,13 +20,21 @@ class VLLMGenerator(Generator):
         Args:
             model (str): vLLM model.
             **kwargs: Additional keyword arguments to pass to the vLLM client.
+
+        Raises:
+            RuntimeError: If the vLLM client fails to initialize.
         """
         super().__init__(model=model)
 
-        self._llm: LLM = LLM(
-            model,
-            **kwargs,
-        )
+        try:
+            self._llm: LLM = LLM(
+                model,
+                **kwargs,
+            )
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to initialize vLLM client for model '{model}': {e}"
+            ) from e
 
     def generate(
         self,
