@@ -4,6 +4,9 @@ data/
 # Documentation build files
 docs/build/
 
+# Environment variables
+.env
+
 # Python version files
 .python-version
 

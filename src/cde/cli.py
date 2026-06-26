@@ -87,10 +87,6 @@ def main(
         None,
         help="Chunk size for processing sentences",
     ),
-    think: bool = typer.Option(
-        False,
-        help="Whether to use CoT prompting for Ollama",
-    ),
     seed: int | None = typer.Option(
         None,
         help="Random seed",
@@ -114,6 +110,7 @@ def main(
         generator: Generator = GeneratorFactory.create(
             backend,
             model,
+            seed=seed,
             **backend_options,
         )
     except ValueError as e:
@@ -144,8 +141,6 @@ def main(
             sentences,
             dataset_dir / CHECKPOINT_FILENAME,
             chunk_size=chunk_size,
-            think=think,
-            seed=seed,
         )
 
         save_annotated_sentences(

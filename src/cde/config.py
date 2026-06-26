@@ -16,6 +16,8 @@ EVALUATION_FILENAME: Path = Path("evaluation.json")
 
 # Generation configurations
 
+MAX_TOKENS: int = 8192
+
 DEFINITION_SELECTION_PROMPT_TEMPLATES: dict[Language, dict[str, str]] = {
     Language.ENGLISH: {
         "sentence": """Read the sentence: {sentence}

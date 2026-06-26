@@ -12,7 +12,6 @@ from .config import (
     DEFAULT_DEFINITION_SELECTION_OPTIONS,
     DEFINITION_SELECTION_PROMPT_TEMPLATES,
 )
-from .generators import OllamaGenerator
 from .generators.base import Generator
 from .io import Dataset, load_annotated_sentences, save_annotated_sentences
 from .models import (
@@ -89,9 +88,7 @@ def _validate_continuation(
 def _generate_annotated_continuations(
     generator: Generator,
     chunk: list[Sentence],
-    definition_selection_options: dict[str, Any],
     language: Language = Language.ENGLISH,
-    seed: int | None = None,
 ) -> dict[str, dict[str, Any]]:
     """
     Generate annotated continuations for a chunk of sentences.
@@ -99,9 +96,7 @@ def _generate_annotated_continuations(
     Args:
         generator (Generator): Generator.
         sentence (Sentence): Sentence.
-        definition_selection_options (dict[str, Any]): Options for definition selection.
         language (Language): Language.
-        seed (int | None): Random seed.
 
     Returns:
         dict[str, dict[str, Any]]: Dictionary mapping sentence instance IDs to their annotated continuations.
@@ -140,9 +135,6 @@ def _generate_annotated_continuations(
             continuation_generation_prompts.append(prompt)
 
         continuation_generation_options = configuration["options"].copy()
-
-        if seed is not None:
-            continuation_generation_options["seed"] = seed
 
         continuation_generation_responses: list[str] = generator.generate(
             continuation_generation_prompts,
@@ -193,7 +185,7 @@ def _generate_annotated_continuations(
     if continuation_definition_selection_prompts:
         continuation_definition_selection_responses = generator.generate(
             continuation_definition_selection_prompts,
-            options=definition_selection_options,
+            options=DEFAULT_DEFINITION_SELECTION_OPTIONS,
         )
 
         for response, (instance_id, condition, definitions) in zip(
@@ -212,8 +204,6 @@ def generate_annotated_sentences(
     dataset: Dataset,
     checkpoint_path: Path,
     chunk_size: int | None = None,
-    think: bool = False,
-    seed: int | None = None,
 ) -> list[AnnotatedSentence]:
     """
     Generate annotated sentences.
@@ -223,22 +213,10 @@ def generate_annotated_sentences(
         dataset (Dataset): Dataset.
         checkpoint_path (Path): Checkpoint path.
         chunk_size (int | None): Chunk size. If None, the entire dataset will be processed at once.
-        think (bool): Whether to use CoT prompting.
-        seed (int | None): Random seed.
 
     Returns:
         list[AnnotatedSentence]: List of annotated sentences.
     """
-    definition_selection_options: dict[str, Any] = (
-        DEFAULT_DEFINITION_SELECTION_OPTIONS.copy()
-    )
-
-    if isinstance(generator, OllamaGenerator):
-        definition_selection_options["think"] = think
-
-    if seed is not None:
-        definition_selection_options["seed"] = seed
-
     annotated_sentences: list[AnnotatedSentence] = []
     instance_ids: set[str] = set()
 
@@ -289,7 +267,7 @@ def generate_annotated_sentences(
 
                 sentence_definition_selection_responses: list[str] = generator.generate(
                     sentence_definition_selection_prompts,
-                    options=definition_selection_options,
+                    options=DEFAULT_DEFINITION_SELECTION_OPTIONS,
                 )
 
                 sentence_predicted_sense_indices: list[int | None] = [
@@ -303,9 +281,7 @@ def generate_annotated_sentences(
                     _generate_annotated_continuations(
                         generator,
                         chunk,
-                        definition_selection_options,
                         language=dataset.language,
-                        seed=seed,
                     )
                 )
 

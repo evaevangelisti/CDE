@@ -16,6 +16,7 @@ class OllamaGenerator(Generator):
     def __init__(
         self,
         model: str,
+        seed: int | None = None,
         **kwargs: Any,
     ):
         """
@@ -23,9 +24,10 @@ class OllamaGenerator(Generator):
 
         Args:
             model (str): Ollama model.
+            seed (int | None): Random seed for generation.
             **kwargs: Additional keyword arguments to pass to the Ollama client.
         """
-        super().__init__(model=model)
+        super().__init__(model=model, seed=seed)
 
         self._client: ollama.Client = ollama.Client(**kwargs)
         self._ensure_model()
@@ -74,9 +76,10 @@ class OllamaGenerator(Generator):
             self._client.generate(
                 model=self._model,
                 prompt=prompt,
-                think=options.get("think", False),
+                think=True,
                 options={
-                    key: value for key, value in options.items() if key != "think"
+                    **options,
+                    **({"seed": self._seed} if self._seed is not None else {}),
                 },
             )["response"].strip()
             for prompt in prompts
